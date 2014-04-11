@@ -166,12 +166,18 @@
     get: function get(query, cb) {
       var that = this, matches = [], cacheHit = false;
 
+	  debugger;
+      if (query === '') {
+        matches = this.index.all();
+      } else {
       matches = this.index.get(query);
       matches = this.sorter(matches).slice(0, this.limit);
 
-      matches.length < this.limit ?
-        (cacheHit = this._getFromRemote(query, returnRemoteMatches)) :
-        this._cancelLastRemoteRequest();
+      if (matches.length < this.limit && this.transport) {
+        cacheHit = this._getFromRemote(query, returnRemoteMatches);
+      }
+      }
+      matches = this.sorter(matches).slice(0, this.limit);
 
       // if a cache hit occurred, skip rendering local matches
       // because the rendering of local/remote matches is already
