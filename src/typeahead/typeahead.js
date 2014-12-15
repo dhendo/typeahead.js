@@ -261,10 +261,9 @@ var Typeahead = (function() {
       }
 
       else {
-		debugger;
         this.input.clearHint();
         this.input.hidePlaceholder();
-        this.input.setHint(val + (match ? match[1] : ''));
+        //this.input.setHint(val + (match ? match[1] : ''));
       }
     },
 
