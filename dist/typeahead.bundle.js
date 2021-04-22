@@ -603,6 +603,7 @@
             this.prefetch = oParser.prefetch(o);
             this.remote = oParser.remote(o);
             this.cacheKey = this.prefetch ? this.prefetch.cacheKey || this.prefetch.url : null;
+            this.cache = this.prefetch ? this.prefetch.cache : true;
             this.index = new SearchIndex({
                 datumTokenizer: o.datumTokenizer,
                 queryTokenizer: o.queryTokenizer
@@ -647,6 +648,9 @@
                 this.transport && this.transport.cancel();
             },
             _saveToStorage: function saveToStorage(data, thumbprint, ttl) {
+                if(!this.cache){
+                    return;
+                }
                 if (this.storage) {
                     this.storage.set(keys.data, data, ttl);
                     this.storage.set(keys.protocol, location.protocol, ttl);

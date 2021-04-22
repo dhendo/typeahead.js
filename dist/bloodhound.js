@@ -596,6 +596,7 @@
             if (!o || !o.local && !o.prefetch && !o.remote) {
                 $.error("one of local, prefetch, or remote is required");
             }
+            this.cache = o.prefetch ? o.prefetch.cache : true;
             this.limit = o.limit || 5;
             this.sorter = getSorter(o.sorter);
             this.dupDetector = o.dupDetector || ignoreDuplicates;
@@ -647,6 +648,9 @@
                 this.transport && this.transport.cancel();
             },
             _saveToStorage: function saveToStorage(data, thumbprint, ttl) {
+                if(!this.cache) {
+                    return;
+                }
                 if (this.storage) {
                     this.storage.set(keys.data, data, ttl);
                     this.storage.set(keys.protocol, location.protocol, ttl);
