@@ -455,6 +455,9 @@
                 this.datums = [];
                 this.trie = newNode();
             },
+            all: function all() {
+                return this.datums.slice(0);
+            },
             serialize: function serialize() {
                 return {
                     datums: this.datums,
@@ -593,6 +596,7 @@
             if (!o || !o.local && !o.prefetch && !o.remote) {
                 $.error("one of local, prefetch, or remote is required");
             }
+            this.cache = o.prefetch ? o.prefetch.cache : true;
             this.limit = o.limit || 5;
             this.sorter = getSorter(o.sorter);
             this.dupDetector = o.dupDetector || ignoreDuplicates;
@@ -644,6 +648,9 @@
                 this.transport && this.transport.cancel();
             },
             _saveToStorage: function saveToStorage(data, thumbprint, ttl) {
+                if(!this.cache) {
+                    return;
+                }
                 if (this.storage) {
                     this.storage.set(keys.data, data, ttl);
                     this.storage.set(keys.protocol, location.protocol, ttl);
@@ -678,9 +685,15 @@
             },
             get: function get(query, cb) {
                 var that = this, matches = [], cacheHit = false;
-                matches = this.index.get(query);
-                matches = this.sorter(matches).slice(0, this.limit);
-                matches.length < this.limit ? cacheHit = this._getFromRemote(query, returnRemoteMatches) : this._cancelLastRemoteRequest();
+                if (query === "") {
+                    matches = this.index.all();
+                } else {
+                    matches = this.index.get(query);
+                    matches = this.sorter(matches).slice(0, this.limit);
+                    if (matches.length < this.limit && this.transport) {
+                        cacheHit = this._getFromRemote(query, returnRemoteMatches);
+                    }
+                }
                 if (!cacheHit) {
                     (matches.length > 0 || !this.transport) && cb && cb(matches);
                 }
